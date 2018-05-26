@@ -6,8 +6,7 @@ let stats = [{
 
 //make ready
 let arg = process.argv[2]
-let sortChoice = process.argv[3]
-
+let sortChoice = process.argv[3] || ""
 if (!arg) {
     console.log("USE: node analyze.js [PATH] [-c or -s]")
     return
@@ -47,8 +46,12 @@ function analyzeDir(dir) {
                 f.count += 1
                 analyzeDir(dir + "\\" + files[i])
             } else {
-                let ext = files[i].split(".")
-                ext = ext[ext.length - 1]
+                let extA = files[i].split(".")
+                ext = extA[extA.length - 1]
+                if (extA.length < 2) {
+                    ext = "file"
+
+                }
                 let f = stats.find(x => x.ext === ext)
                 if (!f) {
                     f = {
@@ -61,17 +64,17 @@ function analyzeDir(dir) {
                     f.count += 1
                     f.size += file.size
                 }
+
             }
         }
     }
 }
 
 function sortStuff() {
-    if (sortChoice === "-s" || !sortChoice) {
-        stats.sort((a, b) => {
-            return b.size - a.size
-        })
-    } else if (sortChoice === "-c" || !sortChoice) {
+    stats.sort((a, b) => {
+        return b.size - a.size
+    })
+    if (sortChoice === "-c") {
         stats.sort((a, b) => {
             return b.count - a.count
         })
@@ -79,12 +82,12 @@ function sortStuff() {
 }
 
 function writeToCSV() {
-    let fname = arg.replace(":", "").replace(/\\/g, "_") + "_OUT.csv"
+    let fname = arg.replace(":", "").replace(/\\/g, "_") + "_OUT" + sortChoice + ".csv"
     let stream = fs.createWriteStream(fname)
     stream.once('open', function (fd) {
         let fol = stats.find(x => x.ext === "folder")
-        let out = "folders;" + fol.count + ";\n"
-        out += "type;count;size;\n"
+        let out = "folders;" + fol.count + ";\r\n"
+        out += "type;count;size;\r\n"
         for (let i = 0; i < stats.length; i++) {
             let s = stats[i]
             console.log(s)
@@ -104,11 +107,15 @@ function writeToCSV() {
                 while (s.size / 1024 > 1)
                     s.size /= 1024
                 s.size = Math.round(s.size * 100) / 100
-                out += s.size + " " + size + "\n"
+                out += s.size + " " + size + "\r\n"
             }
         }
         stream.write(out)
         stream.end()
-        console.log("------------------------\n\nfind CVS at " + fname + "\n\n------------------")
+        console.log("------------------------\n")
+        console.log(stats.length + " differnt file types\n")
+        console.log("------------------------\n")
+        console.log("find CVS at " + fname + "\n")
+        console.log("------------------")
     })
 }

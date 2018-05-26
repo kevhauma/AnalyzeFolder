@@ -9,7 +9,7 @@ gives statistics by filetype, count and size
 
 3. start script by typing "node analyze.js [PATH]"
 
-options -c or -s to sort by file count or file size
+options -c or -s to sort by file count or file size (default sorted by size)
 
 4. find output CSV in folder
 
